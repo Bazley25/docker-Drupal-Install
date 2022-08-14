@@ -1,0 +1,53 @@
+# YAML is a human-readable data-serialization language. It is commonly used for configuration files and in applications where data is being stored or transmitted. 
+
+version: '3.3'  # Compose file versions
+
+services:
+  # mysql Database
+  db:
+    image: mysql:5.7
+    volumes: 
+      - ./db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    restart: always #Database will restart with container
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: drupal123
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    
+  # phpmyadmin
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin # Please use image: phpmyadmin instead of image: phpmyadmin/phpmyadmin for better security
+    restart: always 
+    ports:
+      - "9090:80" # 80 HTTP port
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: password
+    
+
+  #WordPress
+  drupal:
+    depends_on:
+      - db
+    image: drupal:latest
+    ports:
+      - "9000:80"
+    restart: always
+    volumes:
+      - ./var/www/html/modules
+      - ./var/www/html/profiles
+      - ./var/www/html/themes
+      - ./var/www/html/sites
+    
+
+volumes:
+  db_data: 
+
+networks:
+    internal:
+      name: drupal_docker
